@@ -9,6 +9,14 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [showRegister, setShowRegister] = useState(false)
+  const [registerData, setRegisterData] = useState({
+    username: '',
+    password: '',
+    email: '',
+    confirmPassword: ''
+  })
+  const [registerError, setRegisterError] = useState('')
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -35,6 +43,34 @@ export default function LoginPage() {
       setError('Network error. Try again.')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleRegister = async (e) => {
+    e.preventDefault()
+    setRegisterError('')
+    
+    if (registerData.password !== registerData.confirmPassword) {
+      setRegisterError('Passwords do not match')
+      return
+    }
+
+    try {
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: registerData.username,
+          password: registerData.password,
+          email: registerData.email
+        }),
+      })
+      if (response.ok) {
+        setShowRegister(false)
+        setEmail(registerData.email)
+      }
+    } catch (error) {
+      setRegisterError('Registration failed')
     }
   }
 
@@ -101,8 +137,139 @@ export default function LoginPage() {
       </form>
 
       <p style={{ marginTop: 12 }}>
-        Don't have an account? <Link href="/login/register">Register</Link>
+        Don't have an account? <button onClick={() => setShowRegister(true)} style={{ color: '#0070f3', textDecoration: 'underline', background: 'none', border: 'none', cursor: 'pointer' }}>Register</button>
       </p>
+
+      {showRegister && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.7)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{ 
+            backgroundColor: '#1a1a2e',
+            padding: 24,
+            borderRadius: 8,
+            width: '90%',
+            maxWidth: 400
+          }}>
+            <h2 style={{ marginBottom: 16 }}>Register</h2>
+            <form onSubmit={handleRegister}>
+              <label style={{ display: 'block', marginBottom: 8 }}>
+                Username
+                <input
+                  type="text"
+                  value={registerData.username}
+                  onChange={(e) => setRegisterData({...registerData, username: e.target.value})}
+                  style={{
+                    display: 'block',
+                    width: '100%',
+                    padding: 8,
+                    marginTop: 6,
+                    boxSizing: 'border-box',
+                    border: '1px solid #ccc',
+                    borderRadius: 4,
+                  }}
+                  required
+                />
+              </label>
+              <label style={{ display: 'block', marginBottom: 8 }}>
+                Email
+                <input
+                  type="email"
+                  value={registerData.email}
+                  onChange={(e) => setRegisterData({...registerData, email: e.target.value})}
+                  style={{
+                    display: 'block',
+                    width: '100%',
+                    padding: 8,
+                    marginTop: 6,
+                    boxSizing: 'border-box',
+                    border: '1px solid #ccc',
+                    borderRadius: 4,
+                  }}
+                  required
+                />
+              </label>
+              <label style={{ display: 'block', marginBottom: 12 }}>
+                Password
+                <input
+                  type="password"
+                  value={registerData.password}
+                  onChange={(e) => setRegisterData({...registerData, password: e.target.value})}
+                  style={{
+                    display: 'block',
+                    width: '100%',
+                    padding: 8,
+                    marginTop: 6,
+                    boxSizing: 'border-box',
+                    border: '1px solid #ccc',
+                    borderRadius: 4,
+                  }}
+                  required
+                />
+              </label>
+              <label style={{ display: 'block', marginBottom: 12 }}>
+                Confirm Password
+                <input
+                  type="password"
+                  value={registerData.confirmPassword}
+                  onChange={(e) => setRegisterData({...registerData, confirmPassword: e.target.value})}
+                  style={{
+                    display: 'block',
+                    width: '100%',
+                    padding: 8,
+                    marginTop: 6,
+                    boxSizing: 'border-box',
+                    border: '1px solid #ccc',
+                    borderRadius: 4,
+                  }}
+                  required
+                />
+              </label>
+              {registerError && <div style={{ color: '#b00020', marginBottom: 12 }}>{registerError}</div>}
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button
+                  type="submit"
+                  style={{
+                    flex: 1,
+                    padding: 10,
+                    background: '#0070f3',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: 6,
+                    cursor: 'pointer',
+                  }}
+                >
+                  Register
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowRegister(false)}
+                  style={{
+                    flex: 1,
+                    padding: 10,
+                    background: '#666',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: 6,
+                    cursor: 'pointer',
+                  }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
